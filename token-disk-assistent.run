@@ -1,0 +1,57 @@
+#!/bin/bash
+
+SCRIPT_DIR="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+. "$SCRIPT_DIR/2fa-tuner-lib/utils.sh"
+
+init
+
+function cleanup_and_exit () { cleanup; exit $1; }
+trap cleanup_and_exit SIGTERM SIGINT
+
+dialog_manager_enabeled
+if [[ $? -ne 0 ]]
+then
+	sudo_cmd install_packages &
+	show_wait $! "Настройка" "Подождите, идет настройка приложения"
+fi
+
+install_packages check_updates &
+show_wait $! "Обновление" "Проверка наличия обновлений"
+if [[ $? -eq 1 ]]
+then
+	yesno "Установление обновлений" "Проверить и установить обновления? Потребуются права администратора"
+	if  [[ $? -eq 0 ]]
+	then
+		echo "Установка пакетов"
+		sudo_cmd install_packages &
+		show_wait $! "Обновление" "Подождите, идет обновление"
+	fi
+fi
+
+init
+
+get_token_list > get_token_list_res &
+show_wait $! "Подождите" "Подождите, идет получение списка Рутокенов"
+token=`head get_token_list_res -n 1`
+if [ $? -ne 0 || -z "$token" ]
+then
+	cleanup_and_exit 0
+fi
+
+PIN=`get_token_password "$token"`
+if [[ $? -ne 0 ]]
+then
+	cleanup_and_exit 0
+fi
+
+unlock_whole_parts "$1" &
+show_wait $! "Подождите" "Подождите, идет разблокировка разделов на Рутокене"
+if [ $? -ne 0 ]
+then    
+	show_text "Ошибка" "Во время разблокировки разделов произошла ошибка"
+        cleanup_and_exit 0
+fi
+
+show_text "Успех" "Разблокировка разделов прошла успешно"
+
+cleanup_and_exit 0
