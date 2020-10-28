@@ -33,22 +33,23 @@ init
 get_token_list > get_token_list_res &
 show_wait $! "Подождите" "Подождите, идет получение списка Рутокенов"
 token=`head get_token_list_res -n 1`
-if [ $? -ne 0 || -z "$token" ]
+if [[ $? -ne 0 || -z "$token" ]]
 then
 	cleanup_and_exit 0
 fi
 
-PIN=`get_token_password "$token"`
-if [[ $? -ne 0 ]]
+unlock_whole_parts "$token" "l3"
+res=$?
+
+if [[ $res -eq 2 ]]
 then
-	cleanup_and_exit 0
+        show_text "Ошибка" "На токене отуствуют защищенные разделы"
+        cleanup_and_exit 0
 fi
 
-unlock_whole_parts "$1" &
-show_wait $! "Подождите" "Подождите, идет разблокировка разделов на Рутокене"
-if [ $? -ne 0 ]
+if [[ $res -ne 0 ]]
 then    
-	show_text "Ошибка" "Во время разблокировки разделов произошла ошибка"
+	show_text "Ошибка" "Во время разблокировки некоторых разделов произошла ошибка"
         cleanup_and_exit 0
 fi
 
