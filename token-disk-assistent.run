@@ -31,28 +31,52 @@ fi
 init
 
 get_token_list > get_token_list_res &
-show_wait $! "Подождите" "Подождите, идет получение списка Рутокенов"
+show_wait $! "Подождите" "Подождите, идет получение списка подключенных Рутокенов"
+res=$?
+
 token=`head get_token_list_res -n 1`
-if [[ $? -ne 0 || -z "$token" ]]
+
+if [[ $res -ne 0 || -z "$token" ]]
 then
+	show_text "Ошибка" "Не найдено ни одного Рутокена"
 	cleanup_and_exit 0
 fi
+
+count=`wc -l get_token_list_res |  awk '{print $1}'`
+if [[ $count -ne 1 ]]
+then
+	show_text "Ошибка" "Вставленно более одного Рутокена"
+        cleanup_and_exit 0
+fi
+
+
+if [[ -z "$token" ]]
+then
+        cleanup_and_exit 0
+fi
+
 
 unlock_whole_parts "$token" "l3"
 res=$?
 
 if [[ $res -eq 2 ]]
 then
-        show_text "Ошибка" "На токене отуствуют защищенные разделы"
+        show_text "Ошибка" "На токене отуствуют скрытые защищенные разделы"
         cleanup_and_exit 0
+fi
+
+if [[ $res -eq 3 ]]
+then
+	# Пользователь закрыл окно
+	cleanup_and_exit 0
 fi
 
 if [[ $res -ne 0 ]]
 then    
-	show_text "Ошибка" "Во время разблокировки некоторых разделов произошла ошибка"
+	show_text "Ошибка" "`echo -e "Во время разблокировки некоторых защищенных разделов произошла ошибка.\nПодскзка: Возможно введен не верный PIN-код"`"
         cleanup_and_exit 0
 fi
 
-show_text "Успех" "Разблокировка разделов прошла успешно"
+show_text "Успех" "Доступ к защищенным разделам успешно получен"
 
 cleanup_and_exit 0
