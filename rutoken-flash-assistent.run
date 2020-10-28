@@ -34,7 +34,7 @@ get_token_list > get_token_list_res &
 show_wait $! "Подождите" "Подождите, идет получение списка подключенных Рутокенов"
 res=$?
 
-token=`head get_token_list_res -n 1`
+token=`head -n 1 get_token_list_res`
 
 if [[ $res -ne 0 || -z "$token" ]]
 then
