@@ -11,11 +11,11 @@ trap cleanup_and_exit SIGTERM SIGINT
 dialog_manager_enabeled
 if [[ $? -ne 0 ]]
 then
-	sudo_cmd install_packages &
+	sudo_cmd install_packages "" "light" &
 	show_wait $! "Настройка" "Подождите, идет настройка приложения"
 fi
 
-install_packages check_updates &
+install_packages "check_updates" "light" &
 show_wait $! "Обновление" "Проверка наличия обновлений"
 if [[ $? -eq 1 ]]
 then
@@ -23,7 +23,7 @@ then
 	if  [[ $? -eq 0 ]]
 	then
 		echo "Установка пакетов"
-		sudo_cmd install_packages &
+		sudo_cmd install_packages "" "light" &
 		show_wait $! "Обновление" "Подождите, идет обновление"
 	fi
 fi
