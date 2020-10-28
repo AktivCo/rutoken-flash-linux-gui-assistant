@@ -9,5 +9,5 @@ SCRIPT_DIR=`dirname "$SCRIPT"`
 
 cd "$SCRIPT_DIR"
 
-"$SCRIPT_DIR/token-disk-assistent.run" &
+"$SCRIPT_DIR/rutoken-flash-assistent.run" &
 osascript -e 'tell application "Terminal" to close front window' > /dev/null 2>&1 &
